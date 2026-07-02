@@ -16,22 +16,23 @@ pkg_check_modules(GST_BASE REQUIRED IMPORTED_TARGET gstreamer-plugins-base-1.0)
 pkg_check_modules(GST_BAD REQUIRED IMPORTED_TARGET gstreamer-plugins-bad-1.0)
 
 ####################
-set(PEEL_SOURCE_DIR "${CMAKE_CURRENT_SOURCE_DIR}/third_party/peel")
-set(PEEL_BINARY_DIR "${CMAKE_CURRENT_BINARY_DIR}/peel")
+set(peel_SOURCE_DIR  "${CMAKE_CURRENT_SOURCE_DIR}/third_party/peel")
+set(peel_BINARY_DIR  "${CMAKE_CURRENT_BINARY_DIR}/_deps/peel-build")
+set(peel_INSTALL_DIR "${CMAKE_CURRENT_BINARY_DIR}/_deps/peel-install")
 
-if(NOT EXISTS "${PEEL_BINARY_DIR}/bin/peel-gen")
+if(NOT EXISTS "${peel_INSTALL_DIR}/bin/peel-gen")
     message(STATUS "Boostrapping peel...")
     execute_process(
-        COMMAND meson setup "${PEEL_BINARY_DIR}/build" "${PEEL_SOURCE_DIR}" --prefix=${PEEL_BINARY_DIR}
+        COMMAND meson setup "${peel_BINARY_DIR}" "${peel_SOURCE_DIR}" --prefix=${peel_INSTALL_DIR}
         COMMAND_ERROR_IS_FATAL ANY
     )
     execute_process(
-        COMMAND meson install -C "${PEEL_BINARY_DIR}/build" OUTPUT_QUIET
+        COMMAND meson install -C "${peel_BINARY_DIR}" OUTPUT_QUIET
         COMMAND_ERROR_IS_FATAL ANY
     )
 endif()
 
-list(APPEND CMAKE_PREFIX_PATH "${PEEL_BINARY_DIR}")
+list(APPEND CMAKE_PREFIX_PATH "${peel_INSTALL_DIR}")
 
 # FIX for Debian
 if(EXISTS "/usr/lib/${CMAKE_LIBRARY_ARCHITECTURE}/gir-1.0")
