@@ -7,3 +7,6 @@ set(GST_LIBS peel::peel peel::Gst
 
 add_executable(basic-01 basic-01.cpp)
 target_link_libraries(basic-01 PRIVATE ${GST_LIBS})
+
+add_executable(basic-02 basic-02.cpp)
+target_link_libraries(basic-02 PRIVATE ${GST_LIBS})
