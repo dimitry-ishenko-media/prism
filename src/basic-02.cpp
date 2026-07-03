@@ -1,13 +1,13 @@
 ////////////////////////////////////////////////////////////////////////////////
 #include <iostream>
 #include <peel/Gst/Gst.h>
+#include "prism/time.hpp"
 #include <stdexcept>
 
 using namespace peel;
+using namespace pri;
 
 ////////////////////////////////////////////////////////////////////////////////
-constexpr auto inf = -1; // timeout
-
 int main(int argc, char* argv[])
 try
 {
@@ -35,7 +35,7 @@ try
         throw std::runtime_error{"Unable to start playing"};
 
     auto bus = pipeline->get_bus();
-    auto msg = bus->timed_pop_filtered(inf, Gst::Message::Type::ERROR_ | Gst::Message::Type::EOS);
+    auto msg = bus->timed_pop_filtered(time::none, Gst::Message::Type::ERROR_ | Gst::Message::Type::EOS);
     
     UniquePtr<GLib::Error> err;
     String debug_info;
