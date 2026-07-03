@@ -1,14 +1,14 @@
 ////////////////////////////////////////////////////////////////////////////////
 #include <iostream>
 #include <peel/Gst/Gst.h>
+#include "prism/time.hpp"
 #include <stdexcept>
 #include <string>
 
 using namespace peel;
+using namespace pri;
 
 ////////////////////////////////////////////////////////////////////////////////
-constexpr auto inf = -1; // timeout
-
 int main(int argc, char* argv[])
 try
 {
@@ -75,9 +75,9 @@ try
     bool terminate = false;
     do
     {
-        auto mask = Gst::Message::Type::STATE_CHANGED | Gst::Message::Type::ERROR_ | Gst::Message::Type::EOS;
-        auto msg = bus->timed_pop_filtered(inf, mask);
-
+        auto msg = bus->timed_pop_filtered(time::none,
+            Gst::Message::Type::STATE_CHANGED | Gst::Message::Type::ERROR_ | Gst::Message::Type::EOS
+        );
         switch (msg->type)
         {
         case Gst::Message::Type::ERROR_:
