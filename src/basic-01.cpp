@@ -1,12 +1,12 @@
 ////////////////////////////////////////////////////////////////////////////////
 #include <iostream>
 #include <peel/Gst/Gst.h>
+#include "prism/time.hpp"
 
 using namespace peel;
+using namespace pri;
 
 ////////////////////////////////////////////////////////////////////////////////
-constexpr auto inf = -1; // timeout
-
 int main(int argc, char* argv[])
 {
     Gst::init(&argc, &argv);
@@ -17,7 +17,7 @@ int main(int argc, char* argv[])
     auto bus = pipeline->get_bus();
 
     pipeline->set_state(Gst::State::PLAYING);
-    auto msg = bus->timed_pop_filtered(inf, Gst::Message::Type::ERROR_ | Gst::Message::Type::EOS);
+    auto msg = bus->timed_pop_filtered(time::none, Gst::Message::Type::ERROR_ | Gst::Message::Type::EOS);
     if (msg->type == Gst::Message::Type::ERROR_)
         std::cout << "An error occured! Re-run with GST_DEBUG=*:WARN" << std::endl;
 
