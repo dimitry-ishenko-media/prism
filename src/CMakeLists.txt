@@ -10,3 +10,6 @@ target_link_libraries(basic-01 PRIVATE ${GST_LIBS})
 
 add_executable(basic-02 basic-02.cpp)
 target_link_libraries(basic-02 PRIVATE ${GST_LIBS})
+
+add_executable(basic-03 basic-03.cpp)
+target_link_libraries(basic-03 PRIVATE ${GST_LIBS})
