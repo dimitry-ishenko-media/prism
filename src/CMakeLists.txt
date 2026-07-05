@@ -16,3 +16,6 @@ target_link_libraries(basic-03 PRIVATE ${GST_LIBS})
 
 add_executable(basic-04 basic-04.cpp)
 target_link_libraries(basic-04 PRIVATE ${GST_LIBS})
+
+add_executable(hello-asio hello-asio.cpp)
+target_link_libraries(hello-asio PRIVATE ${GST_LIBS})
