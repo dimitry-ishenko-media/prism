@@ -43,6 +43,8 @@ private:
     prism::video_info video_;
 
     RefPtr<Gst::Pipeline> pipeline_;
+    RefPtr<Gst::Element> mixer_, tee_;
+
     dispatch<asio::any_io_executor> dispatch_;
 };
 

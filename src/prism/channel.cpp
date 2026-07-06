@@ -35,7 +35,7 @@ channel::channel(asio::any_io_executor ex, std::string id, prism::video_info vid
 
     auto glup = create("glupload", "glup");
     auto glcc = create("glcolorconvert", "glcc");
-    auto mixer= create("glvideomixer", "mixer");
+    mixer_ = create("glvideomixer", "mixer");
 
     auto exfil= create("capsfilter", "exfil");
     caps = Gst::Caps::from_string(std::format(
@@ -44,17 +44,17 @@ channel::channel(asio::any_io_executor ex, std::string id, prism::video_info vid
     ).data());
     exfil->set_property<Gst::Caps>("caps", caps);
 
-    auto tee = create("tee", "tee");
+    tee_ = create("tee", "tee");
     auto queue = create("queue", "queue");
 
     auto sink = create("fakesink", "sink");
     sink->set_property<bool>("sync", true);
 
     ////////////////////
-    pipeline_->add_many(src, infil, glup, glcc, mixer, exfil, tee, queue, sink);
+    pipeline_->add_many(src, infil, glup, glcc, mixer_, exfil, tee_, queue, sink);
     src->link_many(infil, glup, glcc);
 
-    auto inpad = mixer->get_request_pad("sink_%u");
+    auto inpad = mixer_->get_request_pad("sink_%u");
     inpad->set_property<int>("width", video_.width);
     inpad->set_property<int>("height", video_.height);
     inpad->set_property<unsigned>("zorder", 0);
@@ -62,7 +62,7 @@ channel::channel(asio::any_io_executor ex, std::string id, prism::video_info vid
     auto outpad = glcc->get_static_pad("src");
     outpad->link(inpad);
 
-    mixer->link_many(exfil, tee, queue, sink);
+    mixer_->link_many(exfil, tee_, queue, sink);
 
     ////////////////////
     auto bus = pipeline_->get_bus();
