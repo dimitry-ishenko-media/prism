@@ -6,6 +6,7 @@
 
 ////////////////////////////////////////////////////////////////////////////////
 #include "channel.hpp"
+#include "consumer.hpp"
 
 #include <format>
 
@@ -79,6 +80,52 @@ channel::channel(asio::any_io_executor ex, std::string id, prism::video_info vid
 channel::~channel()
 {
     if (pipeline_) pipeline_->set_state(Gst::State::NULL_);
+}
+
+void channel::add(std::unique_ptr<consumer> con)
+{
+    auto id = con->id();
+    remove(id);
+
+    auto bin = con->get_bin();
+    pipeline_->add(bin);
+
+    auto pad = tee_->get_request_pad("src_%u");
+    auto sink = bin->get_static_pad("sink");
+    if (pad->link(sink) == Gst::Pad::LinkReturn::OK)
+    {
+        bin->sync_state_with_parent();
+        consumers_.emplace(std::move(id), entry{std::move(con), pad});
+    }
+    else
+    {
+        pipeline_->remove(bin);
+        tee_->release_request_pad(pad);
+
+        // TODO
+    }
+}
+
+void channel::remove(const std::string& id)
+{
+    if (auto node = consumers_.extract(id))
+    {
+        auto entry = std::move(node.mapped());
+        entry.pad->add_probe(Gst::Pad::ProbeType::BLOCK_DOWNSTREAM,
+            [this, entry = std::move(entry)](Gst::Pad* pad, Gst::Pad::ProbeInfo*)
+            {
+                auto bin = entry.con->get_bin();
+                auto sink = bin->get_static_pad("sink");
+                pad->unlink(sink);
+
+                tee_->release_request_pad(pad);
+
+                bin->set_state(Gst::State::NULL_);
+                pipeline_->remove(bin);
+
+                return Gst::Pad::ProbeReturn::REMOVE;
+            });
+    }
 }
 
 }

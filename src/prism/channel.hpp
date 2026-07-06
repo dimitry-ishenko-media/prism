@@ -11,14 +11,17 @@
 #include "video_info.hpp"
 
 #include <asio.hpp>
+#include <memory>
 #include <peel/Gst/Gst.h>
 #include <string>
+#include <unordered_map>
 
 ////////////////////////////////////////////////////////////////////////////////
 namespace prism
 {
 
 using namespace peel;
+class consumer;
 
 class channel
 {
@@ -35,6 +38,9 @@ public:
     auto& id() const noexcept { return id_; }
     auto& video_info() const noexcept { return video_; }
 
+    void add(std::unique_ptr<consumer>);
+    void remove(const std::string& id);
+
 private:
     std::string id_;
     prism::video_info video_;
@@ -43,6 +49,13 @@ private:
     RefPtr<Gst::Element> mixer_, tee_;
 
     dispatch<asio::any_io_executor> dispatch_;
+
+    struct entry
+    {
+        std::unique_ptr<consumer> con;
+        RefPtr<Gst::Pad> pad;
+    };
+    std::unordered_map<std::string, entry> consumers_;
 };
 
 }
