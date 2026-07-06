@@ -18,11 +18,15 @@ screen::screen(std::string id) : consumer{std::move(id)}
     };
 
     auto queue = create("queue", "queue");
-    queue->set_property<unsigned>("max-size-buffers", 3);
-    queue->set_property<bool>("leaky", 2); // leaky
+    queue->set_property<unsigned>("max-size-bytes", 0);
+    queue->set_property<unsigned>("max-size-time", 0);
+    queue->set_property<unsigned>("max-size-buffers", 8);
+    queue->set_property<int>("leaky", 2); // leaky
 
     auto glcc = create("glcolorconvert", "glcc");
     auto sink = create("glimagesink", "sink");
+    sink->set_property<bool>("sync", false);
+    sink->set_property<bool>("qos", false);
 
     bin_->add_many(queue, glcc, sink);
     queue->link_many(glcc, sink);
