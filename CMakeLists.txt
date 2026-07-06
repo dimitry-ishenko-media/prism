@@ -13,8 +13,7 @@ pkg_check_modules(GSTREAMER REQUIRED IMPORTED_TARGET gstreamer-1.0)
 pkg_check_modules(GST_BASE REQUIRED IMPORTED_TARGET gstreamer-plugins-base-1.0)
 pkg_check_modules(GST_BAD REQUIRED IMPORTED_TARGET gstreamer-plugins-bad-1.0)
 
-####################
-set(peel_SOURCE_DIR  "${CMAKE_CURRENT_SOURCE_DIR}/third_party/peel")
+set(peel_SOURCE_DIR  "${CMAKE_CURRENT_SOURCE_DIR}/peel")
 set(peel_BINARY_DIR  "${CMAKE_CURRENT_BINARY_DIR}/_deps/peel-build")
 set(peel_INSTALL_DIR "${CMAKE_CURRENT_BINARY_DIR}/_deps/peel-install")
 
@@ -37,8 +36,8 @@ if(EXISTS "/usr/lib/${CMAKE_LIBRARY_ARCHITECTURE}/gir-1.0")
     set(ENV{GI_GIR_PATH} "/usr/lib/${CMAKE_LIBRARY_ARCHITECTURE}/gir-1.0")
 endif()
 
-####################
 find_package(peel REQUIRED)
 peel_generate(Gst 1.0 RECURSIVE)
 
+####################
 add_subdirectory(src)
