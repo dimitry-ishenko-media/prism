@@ -35,9 +35,6 @@ public:
     auto& id() const noexcept { return id_; }
     auto& video_info() const noexcept { return video_; }
 
-    void play();
-    void stop();
-
 private:
     std::string id_;
     prism::video_info video_;

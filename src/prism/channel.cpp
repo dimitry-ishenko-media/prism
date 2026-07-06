@@ -72,21 +72,13 @@ channel::channel(asio::any_io_executor ex, std::string id, prism::video_info vid
     {
         // TODO
     });
+
+    pipeline_->set_state(Gst::State::PLAYING);
 }
 
 channel::~channel()
 {
     if (pipeline_) pipeline_->set_state(Gst::State::NULL_);
-}
-
-void channel::play()
-{
-    pipeline_->set_state(Gst::State::PLAYING);
-}
-
-void channel::stop()
-{
-    pipeline_->set_state(Gst::State::READY);
 }
 
 }
