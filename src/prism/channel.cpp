@@ -13,8 +13,8 @@
 namespace prism
 {
 
-channel::channel(asio::any_io_executor ex, std::string id, channel::format fmt) :
-    id_{std::move(id)}, fmt_{std::move(fmt)}, dispatch_{ex}
+channel::channel(asio::any_io_executor ex, std::string id, prism::video_info video) :
+    id_{std::move(id)}, video_{std::move(video)}, dispatch_{ex}
 {
     pipeline_ = Gst::Pipeline::create(id_.data()).ref_sink();
 
@@ -29,7 +29,7 @@ channel::channel(asio::any_io_executor ex, std::string id, channel::format fmt) 
     auto infil = create("capsfilter", "infil");
     auto caps = Gst::Caps::from_string(std::format(
         "video/x-raw, width=16, height=16, framerate={}/{}",
-        fmt_.fps.num, fmt_.fps.den
+        video_.fps.num, video_.fps.den
     ).data());
     infil->set_property<Gst::Caps>("caps", caps);
 
@@ -40,7 +40,7 @@ channel::channel(asio::any_io_executor ex, std::string id, channel::format fmt) 
     auto exfil= create("capsfilter", "exfil");
     caps = Gst::Caps::from_string(std::format(
         "video/x-raw(memory:GLMemory), format=RGBA, width={}, height={}, framerate={}/{}",
-        fmt_.width, fmt_.height, fmt_.fps.num, fmt_.fps.den
+        video_.width, video_.height, video_.fps.num, video_.fps.den
     ).data());
     exfil->set_property<Gst::Caps>("caps", caps);
 
@@ -55,8 +55,8 @@ channel::channel(asio::any_io_executor ex, std::string id, channel::format fmt) 
     src->link_many(infil, glup, glcc);
 
     auto inpad = mixer->get_request_pad("sink_%u");
-    inpad->set_property<int>("width", fmt_.width);
-    inpad->set_property<int>("height", fmt_.height);
+    inpad->set_property<int>("width", video_.width);
+    inpad->set_property<int>("height", video_.height);
     inpad->set_property<unsigned>("zorder", 0);
 
     auto outpad = glcc->get_static_pad("src");

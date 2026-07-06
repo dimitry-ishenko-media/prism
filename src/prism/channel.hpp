@@ -8,6 +8,7 @@
 #pragma once
 
 #include "dispatch.hpp"
+#include "video_info.hpp"
 
 #include <asio.hpp>
 #include <peel/Gst/Gst.h>
@@ -22,14 +23,7 @@ using namespace peel;
 class channel
 {
 public:
-    struct format
-    {
-        int width;
-        int height;
-        struct { int num, den; } fps;
-    };
-
-    channel(asio::any_io_executor ex, std::string id, format);
+    channel(asio::any_io_executor ex, std::string id, video_info);
     ~channel();
 
     channel(const channel&) = delete;
@@ -38,12 +32,15 @@ public:
     channel(channel&&) = delete;
     channel& operator=(channel&&) = delete;
 
+    auto& id() const noexcept { return id_; }
+    auto& video_info() const noexcept { return video_; }
+
     void play();
     void stop();
 
 private:
     std::string id_;
-    format fmt_;
+    prism::video_info video_;
 
     RefPtr<Gst::Pipeline> pipeline_;
     dispatch<asio::any_io_executor> dispatch_;
