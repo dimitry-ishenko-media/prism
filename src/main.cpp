@@ -7,14 +7,19 @@
 ////////////////////////////////////////////////////////////////////////////////
 #include <asio.hpp>
 #include <iostream>
+#include <peel/Gst/Gst.h>
 
-int main()
+using namespace peel;
+
+int main(int argc, char* argv[])
 {
     std::cout << "Hello world!" << std::endl;
 
+    Gst::init(&argc, &argv);
     asio::io_context ctx;
-    auto work = asio::make_work_guard(ctx);
 
+    auto work = asio::make_work_guard(ctx);
     ctx.run();
+
     return 0;
 }
