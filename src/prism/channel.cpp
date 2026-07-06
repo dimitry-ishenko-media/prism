@@ -13,8 +13,8 @@
 namespace prism
 {
 
-channel::channel(std::string id, channel::format fmt) :
-    id_{std::move(id)}, fmt_{std::move(fmt)}
+channel::channel(asio::any_io_executor ex, std::string id, channel::format fmt) :
+    id_{std::move(id)}, fmt_{std::move(fmt)}, dispatch_{ex}
 {
     pipeline_ = Gst::Pipeline::create(id_.data()).ref_sink();
 
@@ -63,6 +63,15 @@ channel::channel(std::string id, channel::format fmt) :
     outpad->link(inpad);
 
     mixer->link_many(exfil, tee, queue, sink);
+
+    ////////////////////
+    auto bus = pipeline_->get_bus();
+    bus->set_sync_handler(dispatch_);
+
+    dispatch_.add_callback(Gst::Message::Type::ANY, [](Gst::Bus* bus, Gst::Message* msg)
+    {
+        // TODO
+    });
 }
 
 channel::~channel()

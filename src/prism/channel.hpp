@@ -7,6 +7,9 @@
 ////////////////////////////////////////////////////////////////////////////////
 #pragma once
 
+#include "dispatch.hpp"
+
+#include <asio.hpp>
 #include <peel/Gst/Gst.h>
 #include <string>
 
@@ -26,14 +29,14 @@ public:
         struct { int num, den; } fps;
     };
 
-    channel(std::string id, format);
+    channel(asio::any_io_executor ex, std::string id, format);
     ~channel();
 
     channel(const channel&) = delete;
     channel& operator=(const channel&) = delete;
 
-    channel(channel&&) = default;
-    channel& operator=(channel&&) = default;
+    channel(channel&&) = delete;
+    channel& operator=(channel&&) = delete;
 
     void play();
     void stop();
@@ -43,6 +46,7 @@ private:
     format fmt_;
 
     RefPtr<Gst::Pipeline> pipeline_;
+    dispatch<asio::any_io_executor> dispatch_;
 };
 
 }
