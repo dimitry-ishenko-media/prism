@@ -26,7 +26,7 @@ class consumer;
 class channel
 {
 public:
-    channel(asio::any_io_executor ex, std::string id, video_info);
+    channel(asio::any_io_executor ex, std::string id, media_info);
     ~channel();
 
     channel(const channel&) = delete;
@@ -36,14 +36,14 @@ public:
     channel& operator=(channel&&) = delete;
 
     auto& id() const noexcept { return id_; }
-    auto& video_info() const noexcept { return video_; }
+    auto& info() const noexcept { return info_; }
 
     void add(std::unique_ptr<consumer>);
     void remove(const std::string& id);
 
 private:
     std::string id_;
-    prism::video_info video_;
+    media_info info_;
 
     RefPtr<Gst::Pipeline> pipeline_;
     RefPtr<Gst::Element> mixer_, tee_;
