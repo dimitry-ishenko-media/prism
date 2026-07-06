@@ -8,7 +8,7 @@
 #pragma once
 
 #include "dispatch.hpp"
-#include "video_info.hpp"
+#include "media_info.hpp"
 
 #include <asio.hpp>
 #include <memory>

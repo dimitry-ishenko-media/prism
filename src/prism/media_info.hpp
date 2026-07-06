@@ -13,8 +13,7 @@ namespace prism
 
 struct video_info
 {
-    int width;
-    int height;
+    int width, height;
     struct { int num, den; } fps;
 };
 
