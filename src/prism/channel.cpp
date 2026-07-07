@@ -15,7 +15,7 @@ namespace prism
 {
 
 channel::channel(asio::any_io_executor ex, std::string id, media_info info) :
-    id_{std::move(id)}, info_{std::move(info)}, dispatch_{ex}
+    ex_{std::move(ex)}, id_{std::move(id)}, info_{std::move(info)}
 {
     pipeline_ = Gst::Pipeline::create(id_.data()).ref_sink();
 
@@ -67,14 +67,6 @@ channel::channel(asio::any_io_executor ex, std::string id, media_info info) :
     mixer_->link_many(exfil, tee_, queue, sink);
 
     ////////////////////
-    auto bus = pipeline_->get_bus();
-    bus->set_sync_handler(dispatch_);
-
-    dispatch_.add_callback(Gst::Message::Type::ANY, [](Gst::Bus* bus, Gst::Message* msg)
-    {
-        // TODO
-    });
-
     pipeline_->set_state(Gst::State::PLAYING);
 }
 

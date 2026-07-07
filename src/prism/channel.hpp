@@ -7,7 +7,6 @@
 ////////////////////////////////////////////////////////////////////////////////
 #pragma once
 
-#include "dispatch.hpp"
 #include "media_info.hpp"
 
 #include <asio.hpp>
@@ -42,13 +41,12 @@ public:
     void remove(const std::string& id);
 
 private:
+    asio::any_io_executor ex_;
     std::string id_;
     media_info info_;
 
     RefPtr<Gst::Pipeline> pipeline_;
     RefPtr<Gst::Element> mixer_, tee_;
-
-    dispatch<asio::any_io_executor> dispatch_;
 
     struct entry
     {
