@@ -46,12 +46,16 @@ private:
     media_info info_;
 
     RefPtr<Gst::Pipeline> pipeline_;
-    RefPtr<Gst::Element> mixer_, tee_;
+    RefPtr<Gst::Element> vmixer_, vtee_;
+    RefPtr<Gst::Element> amixer_, atee_;
+
+    void setup_video_branch();
+    void setup_audio_branch();
 
     struct entry
     {
         std::unique_ptr<consumer> con;
-        RefPtr<Gst::Pad> pad;
+        RefPtr<Gst::Pad> vpad, apad;
     };
     std::unordered_map<std::string, entry> consumers_;
 };
