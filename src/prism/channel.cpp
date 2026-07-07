@@ -123,20 +123,42 @@ void channel::add(std::unique_ptr<consumer> con)
     auto id = con->id();
     remove(id);
 
-    auto bin = con->get_bin();
+    const auto& bin = con->get_bin();
     pipeline_->add(bin);
 
-    auto pad = vtee_->get_request_pad("src_%u");
-    auto sink = bin->get_static_pad("sink");
-    if (pad->link(sink) == Gst::Pad::LinkReturn::OK)
+    const auto& vpad = con->get_vpad();
+    const auto& apad = con->get_apad();
+    RefPtr<Gst::Pad> vtee_pad, atee_pad;
+
+    bool success = true;
+    if (vpad)
+    {
+        vtee_pad = vtee_->get_request_pad("src_%u");
+        success = (vtee_pad->link(vpad) == Gst::Pad::LinkReturn::OK);
+    }
+    if (success && apad)
+    {
+        atee_pad = atee_->get_request_pad("src_%u");
+        success = (atee_pad->link(apad) == Gst::Pad::LinkReturn::OK);
+    }
+    if (success)
     {
         bin->sync_state_with_parent();
-        consumers_.emplace(std::move(id), entry{std::move(con), pad});
+        consumers_.emplace(std::move(id), entry{ std::move(con), vtee_pad, atee_pad });
     }
     else
     {
+        if (vtee_pad)
+        {
+            if (vtee_pad->is_linked()) vtee_pad->unlink(vpad);
+            vtee_->release_request_pad(vtee_pad);
+        }
+        if (atee_pad)
+        {
+            if (atee_pad->is_linked()) atee_pad->unlink(apad);
+            atee_->release_request_pad(atee_pad);
+        }
         pipeline_->remove(bin);
-        vtee_->release_request_pad(pad);
 
         // TODO
     }
@@ -147,20 +169,29 @@ void channel::remove(const std::string& id)
     if (auto node = consumers_.extract(id))
     {
         auto entry = std::move(node.mapped());
-        entry.vpad->add_probe(Gst::Pad::ProbeType::BLOCK_DOWNSTREAM,
-            [this, entry = std::move(entry)](Gst::Pad* pad, Gst::Pad::ProbeInfo*)
-            {
-                auto bin = entry.con->get_bin();
-                auto sink = bin->get_static_pad("sink");
-                pad->unlink(sink);
+        auto bin = entry.con->get_bin();
 
-                vtee_->release_request_pad(pad);
+        std::shared_ptr<void> async_remove{nullptr, [this, bin](void*){
+            asio::post(ex_, [this, bin]{ pipeline_->remove(bin); bin->set_state(Gst::State::NULL_); });
+        }};
 
-                bin->set_state(Gst::State::NULL_);
-                pipeline_->remove(bin);
+        if (entry.vtee_pad && entry.vtee_pad->is_linked())
+            entry.vtee_pad->add_probe(Gst::Pad::ProbeType::IDLE,
+                [this, vpad = entry.con->get_vpad(), async_remove](Gst::Pad* vtee_pad, Gst::Pad::ProbeInfo*)
+                {
+                    if (vtee_pad->is_linked()) vtee_pad->unlink(vpad);
+                    vtee_->release_request_pad(vtee_pad);
+                    return Gst::Pad::ProbeReturn::REMOVE;
+                });
 
-                return Gst::Pad::ProbeReturn::REMOVE;
-            });
+        if (entry.atee_pad && entry.atee_pad->is_linked())
+            entry.atee_pad->add_probe(Gst::Pad::ProbeType::IDLE,
+                [this, apad = entry.con->get_apad(), async_remove](Gst::Pad* atee_pad, Gst::Pad::ProbeInfo*)
+                {
+                    if (atee_pad->is_linked()) atee_pad->unlink(apad);
+                    atee_->release_request_pad(atee_pad);
+                    return Gst::Pad::ProbeReturn::REMOVE;
+                });
     }
 }
 

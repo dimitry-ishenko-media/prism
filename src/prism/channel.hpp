@@ -55,7 +55,7 @@ private:
     struct entry
     {
         std::unique_ptr<consumer> con;
-        RefPtr<Gst::Pad> vpad, apad;
+        RefPtr<Gst::Pad> vtee_pad, atee_pad;
     };
     std::unordered_map<std::string, entry> consumers_;
 };
