@@ -11,20 +11,27 @@
 namespace prism
 {
 
+namespace
+{
+
+inline auto create(const char* type, const char* name)
+{
+    auto e = Gst::ElementFactory::make(type, name);
+    return std::move(e).ref_sink();
+};
+
+}
+
 screen::screen(std::string id) : consumer{std::move(id)}
 {
-    auto create = [](auto type, auto name) {
-        return Gst::ElementFactory::make(type, name).ref_sink();
-    };
-
-    auto queue = create("queue", "queue");
+    auto queue = create("queue", "vqueue");
     queue->set_property<unsigned>("max-size-bytes", 0);
     queue->set_property<unsigned>("max-size-time", 0);
     queue->set_property<unsigned>("max-size-buffers", 8);
     queue->set_property<int>("leaky", 2); // leaky
 
-    auto glcc = create("glcolorconvert", "glcc");
-    auto sink = create("glimagesink", "sink");
+    auto glcc = create("glcolorconvert", "vglcc");
+    auto sink = create("glimagesink", "vsink");
     sink->set_property<bool>("sync", false);
     sink->set_property<bool>("qos", false);
 
@@ -32,7 +39,9 @@ screen::screen(std::string id) : consumer{std::move(id)}
     queue->link_many(glcc, sink);
 
     auto pad = queue->get_static_pad("sink");
-    create_sink(pad);
+    vpad_ = Gst::GhostPad::create("sink", pad).ref_sink();
+    vpad_->set_active(true);
+    bin_->add_pad(vpad_);
 }
 
 }
