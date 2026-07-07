@@ -30,16 +30,15 @@ public:
 
     const auto& id() const noexcept { return id_; }
 
-    const RefPtr<Gst::Bin>& get_bin() const;
+    const auto& get_bin () const noexcept { return bin_ ; }
+    const auto& get_vpad() const noexcept { return vpad_; }
+    const auto& get_apad() const noexcept { return apad_; }
 
 protected:
     std::string id_;
+
     RefPtr<Gst::Bin> bin_;
-
-    void create_sink(Gst::Pad* target);
-
-private:
-    bool sink_created_ = false;
+    RefPtr<Gst::Pad> vpad_, apad_;
 };
 
 }
