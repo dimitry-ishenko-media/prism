@@ -35,8 +35,8 @@ public:
     channel(channel&&) = delete;
     channel& operator=(channel&&) = delete;
 
-    auto& id() const noexcept { return id_; }
-    auto& info() const noexcept { return info_; }
+    const auto& id() const noexcept { return id_; }
+    const auto& info() const noexcept { return info_; }
 
     void add(std::unique_ptr<consumer>);
     void remove(const std::string& id);

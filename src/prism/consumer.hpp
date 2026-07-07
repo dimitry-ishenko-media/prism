@@ -28,7 +28,7 @@ public:
     consumer(consumer&&) = delete;
     consumer& operator=(consumer&&) = delete;
 
-    auto& id() const noexcept { return id_; }
+    const auto& id() const noexcept { return id_; }
 
     const RefPtr<Gst::Bin>& get_bin() const;
 
